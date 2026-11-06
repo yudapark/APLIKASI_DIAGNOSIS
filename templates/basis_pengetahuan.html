@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Basis Pengetahuan{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="brain"></i> Sistem Pakar</span>
+    <h1>Basis <span class="grad-text">Pengetahuan</span></h1>
+    <p class="muted">Gejala, kesimpulan antara, diagnosis, dan aturan IF–THEN (Forward Chaining). Sumber: Dell, ASUS, HP, Intel Support.</p>
+  </div>
+  <a href="{{ url_for('skenario_uji') }}" class="btn btn-ghost">
+    <i data-lucide="flask-conical"></i> Skenario Uji
+  </a>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="list-checks"></i> Gejala ({{ gejala|length }})</h2>
+  <ul class="pill-list">
+    {% for kode, nama in gejala.items() %}
+    <li><span class="kode">{{ kode }}</span> {{ nama }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="git-branch"></i> Kesimpulan Antara ({{ kesimpulan_antara|length }})</h2>
+  <ul class="pill-list">
+    {% for kode, nama in kesimpulan_antara.items() %}
+    <li><span class="kode alt">{{ kode }}</span> {{ nama }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="shield-alert"></i> Diagnosis Akhir ({{ kesimpulan_akhir|length }})</h2>
+  <div class="diagnosis-grid">
+    {% for kode, d in kesimpulan_akhir.items() %}
+    <div class="diagnosis-box">
+      <div class="diag-head">
+        <span class="diag-kode">{{ kode }}</span>
+        <h3>{{ d.nama }}</h3>
+      </div>
+      <div class="diag-meta">
+        <span class="badge badge-{{ d.tingkat|replace('/', '-')|replace(' ', '-') }}">{{ d.tingkat }}</span>
+      </div>
+      <p class="diag-penjelasan">{{ d.penjelasan }}</p>
+      <div class="diag-solusi">
+        <span class="diag-label"><i data-lucide="wrench"></i> Saran</span>
+        <p>{{ d.solusi }}</p>
+      </div>
+      <div class="diag-sumber">
+        <i data-lucide="book-open"></i>
+        <span><strong>Sumber:</strong> {{ d.sumber }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="workflow"></i> Aturan Produksi ({{ rules|length }})</h2>
+  <div class="rule-list" style="max-height:none;">
+    {% for r in rules %}
+    <div class="rule-box">
+      <span class="rule-id">{{ r.id }}</span>
+      <p>
+        <strong>IF</strong> {{ r.conditions|join(' ' + r.operator + ' ') }}
+        <strong>THEN</strong> {{ r.result }}
+      </p>
+      <p>{{ r.description }}</p>
+      {% if r.source %}<p class="rule-source"><em>Sumber: {{ r.source }}</em></p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

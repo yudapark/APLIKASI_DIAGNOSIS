@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Skenario Pengujian{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="flask-conical"></i> Pengujian</span>
+    <h1>Skenario Uji <span class="grad-text">Forward Chaining</span></h1>
+    <p class="muted">Minimal 5 skenario formal. Diagnosis diuji independen dari merek/model perangkat.</p>
+  </div>
+  <a href="{{ url_for('basis_pengetahuan') }}" class="btn btn-ghost">
+    <i data-lucide="brain"></i> Basis Pengetahuan
+  </a>
+</section>
+
+{% set pass_count = results|selectattr('passed')|list|length %}
+<section class="card">
+  <h2><i data-lucide="check-circle-2"></i> Ringkasan</h2>
+  <div class="metrics">
+    <div class="metric"><strong>{{ results|length }}</strong><span>Skenario</span></div>
+    <div class="metric"><strong>{{ pass_count }}</strong><span>Lulus</span></div>
+    <div class="metric"><strong>{{ results|length - pass_count }}</strong><span>Gagal</span></div>
+  </div>
+</section>
+
+{% for r in results %}
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2 style="margin:0;">
+        {% if r.passed %}
+        <span class="badge badge-kuat">PASS</span>
+        {% else %}
+        <span class="badge badge-tidak-mencukupi">FAIL</span>
+        {% endif %}
+        {{ r.id }} — {{ r.nama }}
+      </h2>
+      <p class="muted" style="margin-top:6px;">{{ r.catatan }}</p>
+    </div>
+  </div>
+  <div class="device-summary">
+    <div><span class="label">Gejala input</span><span class="value">{{ r.gejala|join(', ') }}</span></div>
+    <div><span class="label">Diagnosis diharapkan</span><span class="value">{{ r.expected_diagnosis|join(', ') }}</span></div>
+    <div><span class="label">Diagnosis aktual</span><span class="value">{{ r.actual_diagnosis|join(', ') }}</span></div>
+    <div><span class="label">Aturan diharapkan (subset)</span><span class="value">{{ r.expected_rules_subset|join(', ') or '—' }}</span></div>
+    <div><span class="label">Aturan terpicu</span><span class="value">{{ r.actual_rules|join(', ') or '—' }}</span></div>
+    <div><span class="label">Kesimpulan antara</span><span class="value">{{ r.actual_antara|join(', ') or '—' }}</span></div>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

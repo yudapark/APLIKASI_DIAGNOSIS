@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Identifikasi Perangkat{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="laptop"></i> Tahap 1 · Identifikasi Perangkat</span>
+    <h1>Identifikasi Perangkat <span class="grad-text">Laptop</span></h1>
+    <p class="muted">
+      Pilih merek, keluarga produk, dan model laptop Anda. Informasi ini digunakan
+      sebagai konteks konsultasi—<strong>bukan</strong> untuk mengubah logika diagnosis.
+    </p>
+  </div>
+  {% if saved_device %}
+  <a href="{{ url_for('home') }}" class="btn btn-primary">
+    <i data-lucide="arrow-right"></i> Lanjut ke Konsultasi
+  </a>
+  {% endif %}
+</section>
+
+{% if saved_device %}
+<section class="card">
+  <h2><i data-lucide="check-circle-2"></i> Perangkat Tersimpan</h2>
+  <div class="device-summary">
+    <div><span class="label">Merek</span><span class="value">{{ saved_device.brand }}</span></div>
+    <div><span class="label">Keluarga</span><span class="value">{{ saved_device.family }}</span></div>
+    <div><span class="label">Model</span><span class="value">{{ saved_device.model }}</span></div>
+    <div><span class="label">Prosesor</span><span class="value">{{ saved_device.processor }}</span></div>
+    <div><span class="label">Generasi</span><span class="value">{{ saved_device.generation }}</span></div>
+    <div><span class="label">GPU</span><span class="value">{{ saved_device.gpu }}</span></div>
+    {% if saved_device.mode == 'manual' %}
+    <div class="full">
+      <span class="badge badge-hanya-petunjuk">Input manual — belum diverifikasi</span>
+    </div>
+    {% endif %}
+  </div>
+  <div class="form-actions" style="justify-content:flex-start;margin-top:16px;">
+    <a href="{{ url_for('home') }}" class="btn btn-primary">
+      <i data-lucide="stethoscope"></i> Lanjut ke Konsultasi
+    </a>
+    <a href="{{ url_for('ganti_perangkat') }}" class="btn btn-ghost">
+      <i data-lucide="refresh-cw"></i> Ganti Perangkat
+    </a>
+  </div>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2><i data-lucide="search"></i> Pilih dari Katalog</h2>
+  <form action="{{ url_for('simpan_perangkat') }}" method="POST" id="catalogForm">
+    <input type="hidden" name="mode" value="catalog" />
+
+    <div class="cascade-grid">
+      <div class="validasi-item">
+        <label>1. Merek Laptop</label>
+        <select id="brandSelect" required>
+          <option value="">— Pilih merek —</option>
+          {% for b in brands %}
+          <option value="{{ b.id }}">{{ b.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="validasi-item">
+        <label>2. Keluarga Produk</label>
+        <select id="familySelect" required disabled>
+          <option value="">— Pilih keluarga —</option>
+        </select>
+      </div>
+
+      <div class="validasi-item">
+        <label>3. Model Laptop</label>
+        <select id="modelSelect" name="model_id" required disabled>
+          <option value="">— Pilih model —</option>
+        </select>
+      </div>
+
+      <div class="validasi-item">
+        <label>4. Prosesor</label>
+        <select id="processorSelect" name="processor" disabled>
+          <option value="">— Pilih prosesor —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="modelInfo" class="model-info" style="display:none;">
+      <h3><i data-lucide="info"></i> Informasi Model</h3>
+      <div class="device-summary" id="modelInfoBody"></div>
+    </div>
+
+    <div class="form-actions" style="margin-top:18px;">
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save"></i> Simpan &amp; Lanjutkan
+      </button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <button type="button" class="btn btn-ghost" id="toggleManualBtn">
+    <i data-lucide="help-circle"></i> Tidak Menemukan Model Laptop?
+  </button>
+
+  <div id="manualFormWrap" style="display:none; margin-top:20px;">
+    <h2><i data-lucide="pencil"></i> Input Manual Perangkat</h2>
+    <p class="muted">
+      Gunakan form ini jika merek/model laptop Anda tidak ada di katalog.
+      Data akan diberi label <strong>"Input manual pengguna"</strong>
+      dan tidak dianggap sebagai spesifikasi resmi terverifikasi.
+    </p>
+
+    <div class="info-box">
+      <h3><i data-lucide="search-check"></i> Cara Menemukan Model Laptop</h3>
+      <ul class="note-list">
+        <li><strong>Windows</strong>: Tekan <code>Win + R</code> → ketik <code>msinfo32</code> → lihat <em>System Model</em>.</li>
+        <li><strong>Windows Settings</strong>: <em>Settings → System → About</em> → lihat <em>Device name / Model</em>.</li>
+        <li><strong>Label fisik</strong>: Cek stiker di bagian bawah laptop atau di sekitar engsel.</li>
+        <li><strong>MacBook</strong>: Menu <em>Apple → Mengenai Mac Ini</em>, atau <em>System Information</em>.</li>
+        <li><strong>Situs resmi</strong>: Cek halaman dukungan produsen untuk memverifikasi nomor model.</li>
+      </ul>
+      <p class="muted">Jangan masukkan nomor seri atau Service Tag—informasi tersebut tidak diperlukan untuk konsultasi awal.</p>
+    </div>
+
+    <form action="{{ url_for('simpan_perangkat') }}" method="POST" style="margin-top:16px;">
+      <input type="hidden" name="mode" value="manual" />
+      <div class="cascade-grid">
+        <div class="validasi-item">
+          <label>Nama Merek *</label>
+          <input type="text" name="manual_brand" required placeholder="Contoh: Acer" />
+        </div>
+        <div class="validasi-item">
+          <label>Nama Seri / Keluarga</label>
+          <input type="text" name="manual_family" placeholder="Contoh: Aspire" />
+        </div>
+        <div class="validasi-item">
+          <label>Model Lengkap *</label>
+          <input type="text" name="manual_model" required placeholder="Contoh: Aspire 5 A515" />
+        </div>
+        <div class="validasi-item">
+          <label>Prosesor</label>
+          <input type="text" name="manual_processor" placeholder="Contoh: Intel Core i5-1235U" />
+        </div>
+        <div class="validasi-item full">
+          <label>Keterangan Tambahan</label>
+          <textarea name="manual_notes" rows="3" placeholder="Kondisi khusus, tahun pembelian, dsb."></textarea>
+        </div>
+      </div>
+      <div class="form-actions" style="margin-top:16px;">
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="save"></i> Simpan Profil Manual
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

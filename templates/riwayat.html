@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Riwayat Konsultasi{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="history"></i> Riwayat</span>
+    <h1>Riwayat Konsultasi</h1>
+    <p class="muted">Daftar konsultasi yang pernah dilakukan (tersimpan di database lokal).</p>
+  </div>
+</section>
+
+<section class="card">
+  {% if history %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Waktu</th>
+          <th>Perangkat</th>
+          <th>Diagnosis</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr>
+          <td>{{ h.id }}</td>
+          <td>{{ h.created_at }}</td>
+          <td>
+            <strong>{{ h.brand or '-' }}</strong>
+            {% if h.model %}<br><span class="muted">{{ h.family }} · {{ h.model }}</span>{% endif %}
+          </td>
+          <td style="max-width:280px;">{{ h.diagnosis_summary or '-' }}</td>
+          <td>
+            <a href="{{ url_for('riwayat_detail', history_id=h.id) }}" class="btn btn-ghost btn-sm">
+              <i data-lucide="eye"></i> Detail
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">Belum ada riwayat konsultasi.</p>
+  {% endif %}
+</section>
+{% endblock %}

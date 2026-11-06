@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Konsultasi Gejala{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="stethoscope"></i> Tahap 2 · Konsultasi Gejala</span>
+    <h1>Pilih Gejala <span class="grad-text">Laptop Anda</span></h1>
+    <p class="muted">Centang semua gejala yang sesuai. Sistem akan menganalisis dengan Forward Chaining.</p>
+  </div>
+  <a href="{{ url_for('ganti_perangkat') }}" class="btn btn-ghost">
+    <i data-lucide="refresh-cw"></i> Ganti Perangkat
+  </a>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="laptop"></i> Perangkat Teridentifikasi</h2>
+  <div class="device-summary">
+    <div><span class="label">Merek</span><span class="value">{{ device_profile.brand }}</span></div>
+    <div><span class="label">Keluarga</span><span class="value">{{ device_profile.family }}</span></div>
+    <div><span class="label">Model</span><span class="value">{{ device_profile.model }}</span></div>
+    <div><span class="label">Prosesor</span><span class="value">{{ device_profile.processor }}</span></div>
+    {% if device_profile.mode == 'manual' %}
+    <div class="full">
+      <span class="badge badge-hanya-petunjuk">Input manual — belum diverifikasi</span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card form-card">
+  <div class="card-head">
+    <div>
+      <h2><i data-lucide="clipboard-list"></i> Form Konsultasi</h2>
+      <p class="muted">Pilih gejala yang Anda amati pada laptop.</p>
+    </div>
+    <div class="selection-count" id="selectionCount">0 dipilih</div>
+  </div>
+
+  <form action="{{ url_for('diagnosis') }}" method="POST" id="diagnosisForm" novalidate>
+    <div class="gejala-grid">
+      {% for kode, nama in gejala.items() %}
+      <label class="gejala-item">
+        <input type="checkbox" name="gejala" value="{{ kode }}" />
+        <span class="check-visual"><i data-lucide="check"></i></span>
+        <span class="gejala-text">
+          <span class="kode">{{ kode }}</span>
+          <span class="nama">{{ nama }}</span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="resetBtn">
+        <i data-lucide="rotate-ccw"></i> Reset
+      </button>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <span class="btn-label"><i data-lucide="activity"></i> Mulai Diagnosis</span>
+        <span class="btn-loading"><span class="spinner"></span> Menganalisis…</span>
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}

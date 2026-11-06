@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Hasil Diagnosis{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="file-search"></i> Hasil Konsultasi</span>
+    <h1>Hasil Identifikasi Awal</h1>
+    <p class="muted">Konsultasi dilakukan: {{ identified_at }}</p>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="button" class="btn btn-ghost" onclick="window.print()">
+      <i data-lucide="printer"></i> Cetak / PDF
+    </button>
+    <a href="{{ url_for('home') }}" class="btn btn-ghost">
+      <i data-lucide="arrow-left"></i> Konsultasi Kembali
+    </a>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="laptop"></i> Profil Perangkat</h2>
+  <div class="device-summary">
+    <div><span class="label">Merek</span><span class="value">{{ device_profile.brand }}</span></div>
+    <div><span class="label">Keluarga</span><span class="value">{{ device_profile.family }}</span></div>
+    <div><span class="label">Model</span><span class="value">{{ device_profile.model }}</span></div>
+    <div><span class="label">Generasi</span><span class="value">{{ device_profile.generation }}</span></div>
+    <div><span class="label">Tahun</span><span class="value">{{ device_profile.year }}</span></div>
+    <div><span class="label">Prosesor</span><span class="value">{{ device_profile.processor }}</span></div>
+    <div><span class="label">GPU</span><span class="value">{{ device_profile.gpu }}</span></div>
+    <div><span class="label">Pendinginan</span><span class="value">{{ device_profile.cooling_info }}</span></div>
+    {% if device_profile.mode == 'manual' %}
+    <div class="full">
+      <span class="badge badge-hanya-petunjuk">Input manual — belum diverifikasi</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if device_profile.references %}
+  <div class="diag-sumber" style="margin-top:14px;">
+    <i data-lucide="book-open"></i>
+    <div>
+      <strong>Referensi katalog:</strong>
+      <ul class="note-list" style="margin-top:6px;">
+        {% for ref in device_profile.references %}
+        <li>
+          {{ ref.source_name }}
+          {% if ref.url %}— <a href="{{ ref.url }}" target="_blank" rel="noopener" style="color:var(--cyan-300);">{{ ref.url }}</a>{% endif %}
+          {% if ref.updated_at %}<em> (update: {{ ref.updated_at }})</em>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+{% if device_context is defined and device_context %}
+<section class="card">
+  <h2><i data-lucide="info"></i> Konteks Perangkat (bukan diagnosis)</h2>
+  <p class="muted">Informasi ini hanya konteks. Logika Forward Chaining <strong>tidak diubah</strong> berdasarkan merek/model.</p>
+  {% if device_context.gpu_options %}
+  <p><strong>GPU terstruktur:</strong>
+    {% for g in device_context.gpu_options %}
+      {{ g.name }}{% if g.gpu_type %} ({{ g.gpu_type }}){% endif %}{% if not loop.last %}; {% endif %}
+    {% endfor %}
+  </p>
+  {% endif %}
+  {% if device_context.cooling_options %}
+  <p><strong>Pendinginan tertaut:</strong>
+    {% for c in device_context.cooling_options %}
+      {{ c.name }}{% if not loop.last %}; {% endif %}
+    {% endfor %}
+  </p>
+  {% endif %}
+  {% if device_context.contextual_notes %}
+  <ul class="note-list">
+    {% for n in device_context.contextual_notes %}
+    <li>{{ n }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endif %}
+
+<div class="grid-2col">
+  <section class="card">
+    <h2><i data-lucide="list-checks"></i> Gejala yang Dipilih</h2>
+    <ul class="pill-list">
+      {% for kode in gejala_dipilih %}
+      <li><span class="kode">{{ kode }}</span> {{ daftar_gejala[kode] }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2><i data-lucide="bar-chart-3"></i> Ringkasan Inferensi</h2>
+    <div class="metrics">
+      <div class="metric"><strong>{{ hasil.fakta|length }}</strong><span>Gejala Aktif</span></div>
+      <div class="metric"><strong>{{ hasil.aturan|length }}</strong><span>Aturan Terpenuhi</span></div>
+      <div class="metric"><strong>{{ hasil.diagnosis|length }}</strong><span>Diagnosis</span></div>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <h2><i data-lucide="shield-alert"></i> Hasil Identifikasi</h2>
+  <div class="diagnosis-grid">
+    {% for item in hasil.diagnosis %}
+    <div class="diagnosis-box">
+      <div class="diag-head">
+        <span class="diag-kode">{{ item.kode }}</span>
+        <h3>{{ item.nama }}</h3>
+      </div>
+      <div class="diag-meta">
+        <span class="badge badge-{{ item.tingkat|replace('/', '-')|replace(' ', '-') }}">
+          Tingkat dukungan: {{ item.tingkat }}
+        </span>
+      </div>
+      <p class="diag-penjelasan">{{ item.penjelasan }}</p>
+      <div class="diag-solusi">
+        <span class="diag-label"><i data-lucide="wrench"></i> Saran Penanganan</span>
+        <p>{{ item.solusi }}</p>
+      </div>
+      <div class="diag-sumber">
+        <i data-lucide="book-open"></i>
+        <span><strong>Sumber:</strong> {{ item.sumber }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="workflow"></i> Penjelasan Proses Penalaran</h2>
+  <p class="muted"><strong>Metode:</strong> Forward Chaining.</p>
+
+  <div class="reason-grid">
+    <div>
+      <h3><i data-lucide="link"></i> Kesimpulan Antara Tercapai</h3>
+      {% if hasil.kesimpulan_antara_tercapai %}
+      <ul class="pill-list">
+        {% for kode in hasil.kesimpulan_antara_tercapai %}
+        <li><span class="kode alt">{{ kode }}</span> {{ kesimpulan_antara[kode] }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="muted">Tidak ada kesimpulan antara yang tercapai.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <h3><i data-lucide="scroll-text"></i> Aturan yang Digunakan</h3>
+      {% if hasil.aturan %}
+      <div class="rule-list">
+        {% for aturan in hasil.aturan %}
+        <div class="rule-box">
+          <span class="rule-id">{{ aturan.id }}</span>
+          <p>{{ aturan.description }}</p>
+          {% if aturan.source %}
+          <p class="rule-source"><em>Sumber: {{ aturan.source }}</em></p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">Tidak ada aturan yang terpenuhi.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="alert-triangle"></i> Peringatan</h2>
+  <div class="warning-box">
+    <i data-lucide="info"></i>
+    <div>
+      <p>
+        Hasil ini merupakan <strong>identifikasi awal</strong>. Diagnosis tidak bergantung pada merek/model—
+        logika Forward Chaining tetap memakai basis pengetahuan umum. Beberapa kondisi
+        (thermal paste, kerusakan fisik kipas) hanya dapat dipastikan melalui pemeriksaan teknisi.
+        Jangan membongkar laptop sendiri jika masih dalam masa garansi.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% block title %}Admin Katalog{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="settings"></i> Administrator</span>
+    <h1>Manajemen Katalog Laptop</h1>
+    <p class="muted">Tambahkan merek, keluarga, model, prosesor, dan referensi. Data tersimpan di SQLite.</p>
+  </div>
+  <a href="{{ url_for('admin_logout') }}" class="btn btn-ghost">
+    <i data-lucide="log-out"></i> Logout
+  </a>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="bar-chart-2"></i> Statistik Katalog</h2>
+  <div class="metrics">
+    <div class="metric"><strong>{{ stats.brands }}</strong><span>Merek</span></div>
+    <div class="metric"><strong>{{ stats.families }}</strong><span>Keluarga</span></div>
+    <div class="metric"><strong>{{ stats.models }}</strong><span>Model</span></div>
+    <div class="metric"><strong>{{ stats.processors }}</strong><span>Prosesor</span></div>
+    <div class="metric"><strong>{{ stats.history }}</strong><span>Riwayat</span></div>
+    <div class="metric"><strong>{{ stats.gpus if stats.gpus is defined else '—' }}</strong><span>GPU</span></div>
+    <div class="metric"><strong>{{ stats.sources if stats.sources is defined else '—' }}</strong><span>Sumber</span></div>
+  </div>
+  {% if verification_summary %}
+  <p class="muted" style="margin-top:12px;font-size:13px;">
+    Model ber-referensi: {{ verification_summary.models_with_reference }} ·
+    GPU tertaut: {{ verification_summary.models_with_gpu_link }} ·
+    Cooling tertaut: {{ verification_summary.models_with_cooling_link }}
+  </p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2><i data-lucide="file-spreadsheet"></i> Impor / Ekspor CSV</h2>
+  <p class="muted">Ekspor seluruh katalog atau impor model baru. Kolom wajib: <code>brand</code>, <code>family</code>, <code>model</code>. Prosesor boleh dipisah koma.</p>
+  <div class="form-actions" style="justify-content:flex-start;margin-bottom:16px;">
+    <a href="{{ url_for('admin_export_csv') }}" class="btn btn-primary"><i data-lucide="download"></i> Ekspor Katalog</a>
+    <a href="{{ url_for('admin_csv_template') }}" class="btn btn-ghost"><i data-lucide="file"></i> Unduh Template</a>
+  </div>
+  <form action="{{ url_for('admin_import_csv') }}" method="POST" enctype="multipart/form-data" class="cascade-grid">
+    <div class="validasi-item full">
+      <label>File CSV</label>
+      <input type="file" name="csv_file" accept=".csv,text/csv" required />
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="upload"></i> Impor CSV</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="book-marked"></i> Registri Sumber</h2>
+  {% if sources %}
+  <div class="admin-table-wrap" style="margin-bottom:14px;max-height:220px;overflow:auto;">
+    <table class="admin-table">
+      <thead><tr><th>ID</th><th>Nama</th><th>Jenis</th><th>URL</th></tr></thead>
+      <tbody>
+        {% for s in sources %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.name }}</td>
+          <td><code>{{ s.source_type }}</code></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;">{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener" style="color:var(--cyan-300);">link</a>{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  <form action="{{ url_for('admin_source_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Nama sumber *</label>
+      <input type="text" name="name" required placeholder="Contoh: Dell Support — XPS 15 9530" />
+    </div>
+    <div class="validasi-item">
+      <label>URL</label>
+      <input type="url" name="url" placeholder="https://..." />
+    </div>
+    <div class="validasi-item">
+      <label>Jenis</label>
+      <select name="source_type">
+        <option value="produsen">Produsen resmi</option>
+        <option value="teknis">Dokumentasi teknis</option>
+        <option value="pihak-ketiga">Pihak ketiga terpercaya</option>
+        <option value="manual">Service / Maintenance Manual</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Penerbit</label>
+      <input type="text" name="publisher" placeholder="Dell / Intel / ..." />
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan</label>
+      <input type="text" name="notes" placeholder="Opsional" />
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Daftarkan Sumber</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="badge-check"></i> Update Status Verifikasi Model</h2>
+  <form action="{{ url_for('admin_model_verify') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Model ID *</label>
+      <input type="number" name="model_id" required />
+    </div>
+    <div class="validasi-item">
+      <label>Status verifikasi *</label>
+      <select name="verification_status" required>
+        {% for st in verification_statuses %}
+        <option value="{{ st }}">{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Sumber (opsional)</label>
+      <select name="source_id">
+        <option value="">— Tidak menautkan —</option>
+        {% for s in sources %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Field yang didukung sumber</label>
+      <input type="text" name="field_supported" placeholder="Contoh: processor, gpu, cooling" />
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan verifikasi</label>
+      <textarea name="notes" rows="2" placeholder="Ringkas temuan dari sumber..."></textarea>
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="check-circle"></i> Simpan Status</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="plus-circle"></i> Tambah Merek</h2>
+  <form action="{{ url_for('admin_brand_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Nama Merek</label>
+      <input type="text" name="name" required placeholder="Contoh: Toshiba" />
+    </div>
+    <div class="validasi-item">
+      <label>Slug (unik)</label>
+      <input type="text" name="slug" required placeholder="contoh: toshiba" />
+    </div>
+    <div class="validasi-item full" style="align-self:end;">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Merek</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="list"></i> Daftar Merek ({{ brands|length }})</h2>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead><tr><th>ID</th><th>Nama</th><th>Slug</th><th>Aksi</th></tr></thead>
+      <tbody>
+        {% for b in brands %}
+        <tr>
+          <td>{{ b.id }}</td>
+          <td>{{ b.name }}</td>
+          <td><code>{{ b.slug }}</code></td>
+          <td>
+            <form action="{{ url_for('admin_brand_delete', brand_id=b.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus merek {{ b.name }}? Semua keluarga dan model di dalamnya ikut terhapus.');">
+              <button class="btn btn-ghost btn-sm" type="submit"><i data-lucide="trash-2"></i> Hapus</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="layers"></i> Tambah Keluarga Produk</h2>
+  <form action="{{ url_for('admin_family_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Merek</label>
+      <select name="brand_id" required>
+        <option value="">— Pilih merek —</option>
+        {% for b in brands %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Nama Keluarga</label>
+      <input type="text" name="name" required placeholder="Contoh: Satellite" />
+    </div>
+    <div class="validasi-item full" style="align-self:end;">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Keluarga</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="box"></i> Tambah Model</h2>
+  <form action="{{ url_for('admin_model_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Merek (untuk filter keluarga)</label>
+      <select id="adminBrandSelect">
+        <option value="">— Pilih merek —</option>
+        {% for b in brands %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Keluarga Produk</label>
+      <select name="family_id" id="adminFamilySelect" required>
+        <option value="">— Pilih merek dulu —</option>
+      </select>
+      <small class="muted">Pilih merek di atas agar daftar keluarga muncul.</small>
+    </div>
+    <div class="validasi-item">
+      <label>Nama Model</label>
+      <input type="text" name="name" required placeholder="Contoh: Satellite C50" />
+    </div>
+    <div class="validasi-item">
+      <label>Nomor Model / SKU</label>
+      <input type="text" name="model_number" placeholder="Opsional" />
+    </div>
+    <div class="validasi-item">
+      <label>Generasi</label>
+      <input type="text" name="generation" placeholder="Contoh: Gen 12" />
+    </div>
+    <div class="validasi-item">
+      <label>Tahun</label>
+      <input type="number" name="year" min="2000" max="2030" />
+    </div>
+    <div class="validasi-item">
+      <label>GPU</label>
+      <input type="text" name="gpu" placeholder="Contoh: NVIDIA RTX 4050" />
+    </div>
+    <div class="validasi-item">
+      <label>Info Pendinginan</label>
+      <input type="text" name="cooling_info" placeholder="Contoh: Dual fan, 2 heatpipe" />
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan</label>
+      <textarea name="notes" rows="2"></textarea>
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Model</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="cpu"></i> Tambah Varian Prosesor</h2>
+  <form action="{{ url_for('admin_processor_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Model ID</label>
+      <input type="number" name="model_id" required placeholder="ID model" />
+    </div>
+    <div class="validasi-item">
+      <label>Prosesor</label>
+      <input type="text" name="processor" required placeholder="Contoh: Intel Core i5-1235U" />
+    </div>
+    <div class="validasi-item full" style="align-self:end;">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Prosesor</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="wind"></i> Profil Pendinginan (Template)</h2>
+  <p class="muted" style="margin-top:-8px;margin-bottom:14px;">
+    Template generik — <strong>jangan</strong> menautkan ke model tanpa sumber resmi (service manual / spesifikasi produsen).
+    Field jumlah kipas/heatpipe yang kosong = belum diverifikasi.
+  </p>
+  {% if cooling_profiles %}
+  <div class="admin-table-wrap" style="margin-bottom:16px;">
+    <table class="admin-table">
+      <thead><tr><th>ID</th><th>Nama</th><th>Kipas</th><th>Heatpipe</th><th>Vapor</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for c in cooling_profiles %}
+        <tr>
+          <td>{{ c.id }}</td>
+          <td>{{ c.name }}</td>
+          <td>{{ c.fan_count if c.fan_count is not none else '—' }}</td>
+          <td>{{ c.heatpipe_count if c.heatpipe_count is not none else '—' }}</td>
+          <td>{{ 'Ya' if c.has_vapor_chamber else 'Tidak' }}</td>
+          <td><span class="muted" style="font-size:12px;">{{ c.verification_status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <form action="{{ url_for('admin_cooling_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Nama profil *</label>
+      <input type="text" name="name" required placeholder="Contoh: Dual Fan (verifikasi service manual)" />
+    </div>
+    <div class="validasi-item">
+      <label>Jumlah kipas</label>
+      <input type="number" name="fan_count" min="0" max="6" placeholder="Kosongkan jika belum diketahui" />
+    </div>
+    <div class="validasi-item">
+      <label>Jumlah heatpipe</label>
+      <input type="number" name="heatpipe_count" min="0" max="12" placeholder="Kosongkan jika belum diketahui" />
+    </div>
+    <div class="validasi-item">
+      <label>Vapor chamber</label>
+      <select name="has_vapor_chamber">
+        <option value="0">Tidak / Belum diketahui</option>
+        <option value="1">Ya (terverifikasi)</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Link ke Model ID (opsional)</label>
+      <input type="number" name="model_id" placeholder="Hanya jika ada sumber" />
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan / sumber</label>
+      <textarea name="notes" rows="2" placeholder="URL service manual atau catatan verifikasi"></textarea>
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Profil</button>
+    </div>
+  </form>
+
+  <hr style="border-color:var(--border);margin:20px 0;" />
+  <h3 style="font-size:15px;margin:0 0 12px;">Tautkan profil ke model</h3>
+  <form action="{{ url_for('admin_cooling_link') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Model ID *</label>
+      <input type="number" name="model_id" required />
+    </div>
+    <div class="validasi-item">
+      <label>Profil pendinginan *</label>
+      <select name="cooling_id" required>
+        <option value="">— Pilih —</option>
+        {% for c in cooling_profiles %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan tautan</label>
+      <input type="text" name="notes" placeholder="Contoh: Berdasarkan Hardware Maintenance Manual halaman X" />
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-ghost"><i data-lucide="link"></i> Tautkan</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="monitor"></i> Tambah GPU</h2>
+  <form action="{{ url_for('admin_gpu_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Nama GPU *</label>
+      <input type="text" name="name" required placeholder="Contoh: NVIDIA RTX 4050" />
+    </div>
+    <div class="validasi-item">
+      <label>Vendor</label>
+      <select name="vendor">
+        <option value="">— Auto —</option>
+        <option>NVIDIA</option>
+        <option>AMD</option>
+        <option>Intel</option>
+        <option>Apple</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Tipe</label>
+      <select name="gpu_type">
+        <option value="">— Auto —</option>
+        <option value="dedicated">Dedicated</option>
+        <option value="integrated">Integrated</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Series</label>
+      <input type="text" name="series" placeholder="Contoh: RTX 40" />
+    </div>
+    <div class="validasi-item">
+      <label>VRAM (GB)</label>
+      <input type="number" step="0.5" name="vram_gb" placeholder="6" />
+    </div>
+    <div class="validasi-item">
+      <label>Link ke Model ID (opsional)</label>
+      <input type="number" name="model_id" placeholder="ID model" />
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah GPU</button>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="book-open"></i> Tambah Referensi</h2>
+  <form action="{{ url_for('admin_reference_add') }}" method="POST" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Model ID</label>
+      <input type="number" name="model_id" required />
+    </div>
+    <div class="validasi-item">
+      <label>Nama Sumber</label>
+      <input type="text" name="source_name" required placeholder="Contoh: Toshiba Support" />
+    </div>
+    <div class="validasi-item">
+      <label>URL</label>
+      <input type="url" name="url" placeholder="https://..." />
+    </div>
+    <div class="validasi-item">
+      <label>Jenis Sumber</label>
+      <select name="source_type">
+        <option value="produsen">Produsen resmi</option>
+        <option value="teknis">Dokumentasi teknis</option>
+        <option value="pihak-ketiga">Pihak ketiga terpercaya</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Tanggal Update</label>
+      <input type="date" name="updated_at" />
+    </div>
+    <div class="validasi-item full">
+      <button type="submit" class="btn btn-primary"><i data-lucide="save"></i> Tambah Referensi</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

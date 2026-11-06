@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a1024" />
+  <title>{% block title %}{{ app_name }}{% endblock %} — Sistem Pakar Laptop Overheating</title>
+  <meta name="description" content="Sistem pakar berbasis web untuk identifikasi awal penyebab laptop overheating menggunakan Forward Chaining, dengan katalog multi-merek dan basis pengetahuan dari Dell, ASUS, HP, dan Intel." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body data-active="{{ active|default('') }}">
+
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+  </div>
+
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="{{ url_for('identifikasi') }}">
+        <span class="brand-mark"><i data-lucide="cpu"></i></span>
+        <span class="brand-text">
+          <strong>{{ app_name }}</strong>
+          <small>Diagnostic System</small>
+        </span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="{{ url_for('identifikasi') }}" class="{{ 'active' if active=='identifikasi' else '' }}">
+          <i data-lucide="laptop"></i> Identifikasi
+        </a>
+        {% if session.get('device_profile') %}
+        <a href="{{ url_for('home') }}" class="{{ 'active' if active=='home' else '' }}">
+          <i data-lucide="stethoscope"></i> Konsultasi
+        </a>
+        {% endif %}
+        <a href="{{ url_for('katalog') }}" class="{{ 'active' if active=='katalog' else '' }}">
+          <i data-lucide="library"></i> Katalog
+        </a>
+        <a href="{{ url_for('sumber') }}" class="{{ 'active' if active=='sumber' else '' }}">
+          <i data-lucide="book-marked"></i> Sumber
+        </a>
+        <a href="{{ url_for('basis_pengetahuan') }}" class="{{ 'active' if active=='basis' else '' }}">
+          <i data-lucide="brain"></i> Basis Pengetahuan
+        </a>
+        <a href="{{ url_for('riwayat') }}" class="{{ 'active' if active=='riwayat' else '' }}">
+          <i data-lucide="history"></i> Riwayat
+        </a>
+        <a href="{{ url_for('validasi') }}" class="{{ 'active' if active=='validasi' else '' }}">
+          <i data-lucide="user-check"></i> Validasi
+        </a>
+        <a href="{{ url_for('admin') }}" class="{{ 'active' if active=='admin' else '' }}">
+          <i data-lucide="settings"></i> Admin
+        </a>
+        {% if is_admin %}
+        <a href="{{ url_for('admin_logout') }}" class="nav-logout">
+          <i data-lucide="log-out"></i> Logout
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="flash flash-{{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© {{ app_year }} {{ app_name }} — Sistem Pakar Identifikasi Penyebab Laptop Overheating</p>
+      <p class="muted">Basis pengetahuan: Dell, ASUS, HP, Intel. Katalog perangkat: situs resmi produsen. Hasil bersifat identifikasi awal.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

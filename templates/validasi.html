@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Validasi Pengetahuan Pakar{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 style="margin-top:0;"><i data-lucide="user-check"></i> Validasi Pengetahuan Pakar</h1>
+  <p class="muted">
+    Bagian ini disediakan untuk mendokumentasikan hasil pemeriksaan basis pengetahuan
+    oleh teknisi komputer. Gunakan formulir ini sebagai bukti validasi dalam laporan.
+  </p>
+
+  <div class="validasi-grid">
+    <div class="validasi-item">
+      <label>Nama Validator</label>
+      <input type="text" placeholder="Nama teknisi" />
+    </div>
+    <div class="validasi-item">
+      <label>Keahlian / Bidang</label>
+      <input type="text" placeholder="Contoh: Teknisi Hardware / IT Support" />
+    </div>
+    <div class="validasi-item">
+      <label>Tempat Kerja / Praktik</label>
+      <input type="text" placeholder="Nama toko servis / institusi" />
+    </div>
+    <div class="validasi-item">
+      <label>Tanggal Validasi</label>
+      <input type="date" />
+    </div>
+    <div class="validasi-item full">
+      <label>Gejala yang Diperiksa</label>
+      <textarea placeholder="Contoh: G01, G02, G04, G06, G11 ..."></textarea>
+    </div>
+    <div class="validasi-item full">
+      <label>Aturan yang Diperiksa</label>
+      <textarea placeholder="Contoh: R01, R04, R07, R11 ..."></textarea>
+    </div>
+    <div class="validasi-item full">
+      <label>Hasil Penilaian</label>
+      <select>
+        <option>Sesuai dengan praktik teknisi</option>
+        <option>Sebagian sesuai, perlu perbaikan</option>
+        <option>Tidak sesuai</option>
+      </select>
+    </div>
+    <div class="validasi-item full">
+      <label>Catatan / Saran Perbaikan</label>
+      <textarea rows="4" placeholder="Catatan validator..."></textarea>
+    </div>
+  </div>
+
+  <div class="warning-box" style="margin-top:20px;">
+    <i data-lucide="info"></i>
+    <div>
+      <p>
+        <strong>Catatan:</strong> Formulir ini adalah template dokumentasi.
+        Untuk keperluan UTS, disarankan untuk benar-benar mewawancarai 1–2 teknisi
+        dan mengisi konten sebenarnya. Bagian ini dapat dilampirkan dalam laporan
+        sebagai bukti bahwa basis pengetahuan telah divalidasi praktisi.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="book-open"></i> Sumber Referensi Basis Pengetahuan</h2>
+  <ul class="note-list">
+    <li>Dell Support — <em>How to Troubleshoot an Overheating, Shutdown, or Thermal Issue on a Dell PC</em></li>
+    <li>ASUS Support — FAQ 1015064: Troubleshooting Laptop Overheating</li>
+    <li>HP Support — <em>Computer Overheating (Windows)</em></li>
+    <li>Intel Support — <em>How to Check if My Intel® Processor is Overheating</em></li>
+  </ul>
+</section>
+{% endblock %}

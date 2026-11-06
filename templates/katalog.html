@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Katalog Laptop{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="library"></i> Katalog</span>
+    <h1>Katalog <span class="grad-text">Laptop</span></h1>
+    <p class="muted">Jelajahi merek, model, dan filter berdasarkan tahun atau GPU. Data bersifat contoh seed — verifikasi detail di sumber resmi.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="filter"></i> Filter</h2>
+  <form method="GET" action="{{ url_for('katalog') }}" class="cascade-grid">
+    <div class="validasi-item">
+      <label>Merek</label>
+      <select name="brand_id">
+        <option value="">— Semua merek —</option>
+        {% for b in brands %}
+        <option value="{{ b.id }}" {% if filters.brand_id == b.id|string %}selected{% endif %}>{{ b.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Cari nama</label>
+      <input type="text" name="q" value="{{ filters.q }}" placeholder="Model / seri..." />
+    </div>
+    <div class="validasi-item">
+      <label>Tahun dari</label>
+      <input type="number" name="year_from" value="{{ filters.year_from }}" min="2008" max="2030" placeholder="2018" />
+    </div>
+    <div class="validasi-item">
+      <label>Tahun sampai</label>
+      <input type="number" name="year_to" value="{{ filters.year_to }}" min="2008" max="2030" placeholder="2024" />
+    </div>
+    <div class="validasi-item">
+      <label>Vendor GPU</label>
+      <select name="gpu_vendor">
+        <option value="">— Semua —</option>
+        <option value="NVIDIA" {% if filters.gpu_vendor=='NVIDIA' %}selected{% endif %}>NVIDIA</option>
+        <option value="AMD" {% if filters.gpu_vendor=='AMD' %}selected{% endif %}>AMD</option>
+        <option value="Intel" {% if filters.gpu_vendor=='Intel' %}selected{% endif %}>Intel</option>
+        <option value="Apple" {% if filters.gpu_vendor=='Apple' %}selected{% endif %}>Apple</option>
+      </select>
+    </div>
+    <div class="validasi-item">
+      <label>Tipe GPU</label>
+      <select name="dedicated">
+        <option value="">— Semua —</option>
+        <option value="1" {% if filters.dedicated=='1' %}selected{% endif %}>Dedicated (RTX/GTX/RX)</option>
+        <option value="0" {% if filters.dedicated=='0' %}selected{% endif %}>Integrated / iGPU</option>
+      </select>
+    </div>
+    <div class="validasi-item full" style="align-self:end;">
+      <button type="submit" class="btn btn-primary"><i data-lucide="search"></i> Terapkan Filter</button>
+      <a href="{{ url_for('katalog') }}" class="btn btn-ghost">Reset</a>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="laptop"></i> Hasil ({{ models|length }} model)</h2>
+  {% if models %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Merek</th>
+          <th>Keluarga</th>
+          <th>Model</th>
+          <th>Tahun</th>
+          <th>GPU</th>
+          <th>Pendinginan</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in models %}
+        <tr>
+          <td>{{ m.brand_name }}</td>
+          <td>{{ m.family_name }}</td>
+          <td><strong>{{ m.name }}</strong>{% if m.generation %}<br><span class="muted">{{ m.generation }}</span>{% endif %}</td>
+          <td>{{ m.year or '—' }}</td>
+          <td>{{ m.gpu or 'Informasi belum tersedia' }}</td>
+          <td>{{ m.cooling_info or 'Belum tersedia' }}</td>
+          <td><span class="muted" style="font-size:12px;">{{ m.verification_status or '—' }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">Tidak ada model yang cocok dengan filter.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Sumber & Verifikasi{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="book-marked"></i> Transparansi Data</span>
+    <h1>Sumber &amp; <span class="grad-text">Verifikasi</span></h1>
+    <p class="muted">
+      Registri sumber resmi dan ringkasan status verifikasi katalog.
+      Data seed bersifat contoh dan perlu dicek ulang sebelum dikutip sebagai spesifikasi pasti.
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="bar-chart-2"></i> Ringkasan Kualitas Data</h2>
+  <div class="metrics">
+    <div class="metric"><strong>{{ verification_summary.total_models }}</strong><span>Total Model</span></div>
+    <div class="metric"><strong>{{ verification_summary.models_with_reference }}</strong><span>Punya Referensi</span></div>
+    <div class="metric"><strong>{{ verification_summary.models_with_gpu_link }}</strong><span>GPU Terstruktur</span></div>
+    <div class="metric"><strong>{{ verification_summary.models_with_cooling_link }}</strong><span>Cooling Tertaut</span></div>
+    <div class="metric"><strong>{{ verification_summary.sources_registered }}</strong><span>Sumber Terdaftar</span></div>
+  </div>
+  <h3 style="margin-top:20px;font-size:15px;">Distribusi status verifikasi model</h3>
+  <ul class="note-list">
+    {% for row in verification_summary.by_status %}
+    <li><strong>{{ row.verification_status or '(kosong)' }}</strong> — {{ row.c }} model</li>
+    {% else %}
+    <li class="muted">Belum ada data status.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="library"></i> Registri Sumber</h2>
+  <p class="muted">Prioritas: situs resmi produsen → dokumentasi CPU/GPU → pihak ketiga terpercaya.</p>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Nama</th><th>Penerbit</th><th>Jenis</th><th>URL</th><th>Diakses</th></tr>
+      </thead>
+      <tbody>
+        {% for s in sources %}
+        <tr>
+          <td><strong>{{ s.name }}</strong></td>
+          <td>{{ s.publisher or '—' }}</td>
+          <td><code>{{ s.source_type }}</code></td>
+          <td>{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener" style="color:var(--cyan-300);">{{ s.url }}</a>{% else %}—{% endif %}</td>
+          <td>{{ s.accessed_at or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">Belum ada sumber.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="info"></i> Kebijakan Verifikasi</h2>
+  <ul class="note-list">
+    <li><strong>Terverifikasi dari produsen</strong> — spesifikasi diambil dari halaman resmi / service manual.</li>
+    <li><strong>Terverifikasi dari dokumentasi teknis</strong> — Intel ARK, AMD, NVIDIA, atau dokumen teknis setara.</li>
+    <li><strong>Contoh seed — perlu verifikasi detail</strong> — data awal katalog; jangan dikutip sebagai fakta akhir.</li>
+    <li><strong>Belum tersedia</strong> — field kosong karena produsen tidak memublikasikan atau belum diteliti.</li>
+  </ul>
+  <div class="warning-box" style="margin-top:16px;">
+    <i data-lucide="alert-triangle"></i>
+    <div>
+      <p>Sistem diagnosis overheating <strong>tidak bergantung</strong> pada spesifikasi GPU/cooling per model.
+      Katalog hanya konteks. Aturan Forward Chaining memakai basis pengetahuan umum yang bersumber dari Dell, ASUS, HP, dan Intel Support.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

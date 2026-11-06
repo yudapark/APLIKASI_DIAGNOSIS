@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Detail Riwayat #{{ item.id }}{% endblock %}
+
+{% block content %}
+<section class="result-head">
+  <div>
+    <span class="pill"><i data-lucide="history"></i> Riwayat #{{ item.id }}</span>
+    <h1>Detail Konsultasi</h1>
+    <p class="muted">{{ item.created_at }}</p>
+  </div>
+  <a href="{{ url_for('riwayat') }}" class="btn btn-ghost">
+    <i data-lucide="arrow-left"></i> Kembali
+  </a>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="laptop"></i> Perangkat</h2>
+  <div class="device-summary">
+    <div><span class="label">Merek</span><span class="value">{{ item.brand or '-' }}</span></div>
+    <div><span class="label">Keluarga</span><span class="value">{{ item.family or '-' }}</span></div>
+    <div><span class="label">Model</span><span class="value">{{ item.model or '-' }}</span></div>
+    <div><span class="label">Prosesor</span><span class="value">{{ item.processor or '-' }}</span></div>
+    <div><span class="label">Mode</span><span class="value">{{ item.mode or '-' }}</span></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="list-checks"></i> Gejala</h2>
+  <p>{{ item.symptoms }}</p>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="shield-alert"></i> Diagnosis</h2>
+  <p>{{ item.diagnosis_summary }}</p>
+  <p class="muted" style="margin-top:10px;">Kode: {{ item.diagnosis_codes }}</p>
+</section>
+
+<section class="card">
+  <h2><i data-lucide="workflow"></i> Aturan yang Terpicu</h2>
+  <p>{{ item.rules_fired }}</p>
+</section>
+{% endblock %}

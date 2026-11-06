@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login Admin{% endblock %}
+
+{% block content %}
+<section class="card" style="max-width:420px;margin:40px auto;">
+  <h2 style="margin-top:0;"><i data-lucide="lock"></i> Login Administrator</h2>
+  <p class="muted">Akses terbatas untuk pengelolaan katalog perangkat.</p>
+
+  <form method="POST" action="{{ url_for('admin_login') }}" style="margin-top:20px;">
+    <div class="validasi-item" style="margin-bottom:14px;">
+      <label>Username</label>
+      <input type="text" name="username" required placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="validasi-item" style="margin-bottom:18px;">
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+      <i data-lucide="log-in"></i> Masuk
+    </button>
+  </form>
+</section>
+{% endblock %}
